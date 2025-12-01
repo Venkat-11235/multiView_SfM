@@ -72,9 +72,10 @@ namespace featureExtractionMatching{
             matched_features.src_pts.push_back(kp1[matched_features.goodMatches[kp_idx].queryIdx].pt);
             matched_features.dst_pts.push_back(kp2[matched_features.goodMatches[kp_idx].trainIdx].pt);
         }
+        std::cout<<"Total matches passing Loewe: "<< matched_features.src_pts.size()<<std::endl;
         std::vector<uchar> inlierMask;
         cv::Mat H = cv::findHomography( matched_features.src_pts,matched_features.dst_pts, cv::RANSAC, 5.0, inlierMask);
-
+        std::cout<<"Length of Inlier Mask: "<<inlierMask.size()<<std::endl;
         for (size_t inlier_idx = 0; inlier_idx < inlierMask.size(); inlier_idx++)
         {
             if(inlierMask[inlier_idx]){

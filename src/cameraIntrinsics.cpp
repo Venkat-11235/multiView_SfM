@@ -7,7 +7,7 @@
 #include<opencv2/core/utils/filesystem.hpp>
 
 namespace readIntrinsics{
-    cameraIntrinsics readCameraIntrinsics(const std::string& filepath){
+    cameraIntrinsics readCameraIntrinsics(const std::string& filepath, const int SCALE_FACTOR){
         std::ifstream in(filepath);
         if (!in.is_open()){
             throw std::runtime_error("Could not open the camera intrinsics file!!! "+ filepath);
@@ -36,12 +36,12 @@ namespace readIntrinsics{
             iss >> cx;
             iss >> cy;
 
-            fintr.K.at<double>(0,0) = fx;
+            fintr.K.at<double>(0,0) = static_cast<int>(fx/SCALE_FACTOR);
             fintr.K.at<double>(0,1) = 0.0;
-            fintr.K.at<double>(0,2) = cx;
+            fintr.K.at<double>(0,2) = static_cast<int>(cx/SCALE_FACTOR);
             fintr.K.at<double>(1, 0) = 0.0;
-            fintr.K.at<double>(1, 1) = fy;
-            fintr.K.at<double>(1, 2) = cy;
+            fintr.K.at<double>(1, 1) = static_cast<int>(fy/SCALE_FACTOR);
+            fintr.K.at<double>(1, 2) = static_cast<int>(cy/SCALE_FACTOR);
             fintr.K.at<double>(2, 0) = 0.0;
             fintr.K.at<double>(2, 1) = 0.0;
             fintr.K.at<double>(2, 2) = 1.0;

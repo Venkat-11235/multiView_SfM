@@ -13,6 +13,6 @@ namespace readIntrinsics{
         cv::Mat dist;
     };
 
-    cameraIntrinsics readCameraIntrinsics(const std::string& filepath);
+    cameraIntrinsics readCameraIntrinsics(const std::string& filepath, const int SCALE_FACTOR);
     
 }
