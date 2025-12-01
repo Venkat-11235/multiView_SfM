@@ -82,13 +82,14 @@ std::vector<featureExtractionMatching::imgFeatures> saveImgFeatures(const std::s
     for (const auto&p : imgs_list)
     {
 
-        cv::Mat img_read;
+        cv::Mat img_read, img_col;
         img_read = cv::imread(p.string());
 
         if (img_read.empty())
         {
             throw std::runtime_error("File not found or unable to open the input file !!!");
         }
+        cv::resize(img_read, img_col, cv::Size(static_cast<int>(img_read.cols/SCALE_FACTOR), static_cast<int>(img_read.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
         cv::cvtColor(img_read, img_read, cv::COLOR_BGR2GRAY);
         cv::resize(img_read, img_read, cv::Size(static_cast<int>(img_read.cols/SCALE_FACTOR), static_cast<int>(img_read.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
 
@@ -102,6 +103,7 @@ std::vector<featureExtractionMatching::imgFeatures> saveImgFeatures(const std::s
         
         result_img_features.img_name = img_name;
         result_img_features.img_gray = img_read;
+        result_img_features.img_col = img_col;
 
 
         write_u32(f, result_img_features.kp_img.size());
@@ -350,12 +352,12 @@ int main(int argc, char** argv){
             prev_2D_filtered_matches = img_feature_matching_result.matches_passing_homography;
             
 
-            for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size(); i++)
-            {
-                auto& p = triangulated_pc_data.point_cloud_data_3d[i];
-                points.emplace_back(p.x, p.y, p.z);
+            // for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size(); i++)
+            // {
+            //     auto& p = triangulated_pc_data.point_cloud_data_3d[i];
+            //     points.emplace_back(p.x, p.y, p.z);
 
-            }
+            // }
         }
         else{
 
@@ -385,10 +387,32 @@ int main(int argc, char** argv){
 
 
             
-            //std::vector<cv::Point2f> projected_imgpts;
-            //cv::projectPoints(triangulated_pc_data.point_cloud_data_3d, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
-            //                                intrinsic_parameters.K, dist_coeffs, projected_imgpts);
+            std::vector<cv::Point2d> projected_imgpts;
+            cv::projectPoints(triangulated_pc_data.point_cloud_data_3d, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
+                                            intrinsic_parameters.K, dist_coeffs, projected_imgpts);
+
+            cv::Mat output_img_proj = temp_imgFeature2.img_col.clone();
+            std::string fname = "Projected"+ std::to_string(imgIdx)+".jpg";
             
+            for (size_t i = 0; i < projected_imgpts.size(); i++)
+            {
+                const cv::Point2d& proj_pt = projected_imgpts[i];
+                const cv::Point2f& obs_pt = img_feature_matching_result.dst_gm_corrected[i];
+                
+                int proj_x = static_cast<int>(proj_pt.x);
+                int proj_y = static_cast<int>(proj_pt.y);
+                int obs_x = static_cast<int>(obs_pt.x);
+                int obs_y = static_cast<int>(obs_pt.y);
+
+                cv::circle(output_img_proj, cv::Point(proj_x,proj_y), 3, (0,255,0), -1);
+                cv::circle(output_img_proj, cv::Point(obs_x, obs_y), 3, (0,0,255), -1);
+
+                cv::line(output_img_proj, cv::Point(proj_x,proj_y), cv::Point(obs_x,obs_y), cv::Scalar(255,0,0), 1);
+
+            }
+            cv::imwrite(fname, output_img_proj);
+            
+
             R_prev = transformed_parameters.rotation_matrix;
             t_prev = transformed_parameters.translation_vector;
             prev_3D_points = triangulated_pc_data.point_cloud_data_3d;
@@ -397,16 +421,17 @@ int main(int argc, char** argv){
                        triangulated_pc_data.point_cloud_data_3d.begin(),
                        triangulated_pc_data.point_cloud_data_3d.end());
             
-            for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size(); i++)
-            {
-                auto& p = triangulated_pc_data.point_cloud_data_3d[i];
-                points.emplace_back(p.x, p.y, p.z);
-
-            }
+            
             
         }
         
     }
+    for (size_t i = 0; i < full_pointcloud_data.size(); i++)
+            {
+                auto& p = full_pointcloud_data[i];
+                points.emplace_back(p.x, p.y, p.z);
+
+            }
     auto point_cloud_data = std::make_shared<open3d::geometry::PointCloud>();
 
     point_cloud_data->points_ = points;

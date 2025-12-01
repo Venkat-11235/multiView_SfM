@@ -5,7 +5,7 @@
 namespace get3D2DCorrespondance{
     struct correspondance
     {
-        std::vector<cv::Point3f> filtered3Dpts;
+        std::vector<cv::Point3d> filtered3Dpts;
         std::vector<cv::Point2f> filtered2Dpts;
     };
     correspondance get_correspondace(std::vector<cv::DMatch>& filtered_matches, std::vector<cv::KeyPoint>& kp_current, std::vector<cv::DMatch>& prev_2D_filtered_matches, std::vector<cv::Point3d>& prev_3D_points);
@@ -21,5 +21,5 @@ namespace computeTransformation{
 
     };
 
-    resultTransformation computePnP(std::vector<cv::Point3f>& obj_points, std::vector<cv::Point2f>& img_points, cv::Mat& K, cv::Mat& dist_coeffs);
+    resultTransformation computePnP(std::vector<cv::Point3d>& obj_points, std::vector<cv::Point2f>& img_points, cv::Mat& K, cv::Mat& dist_coeffs);
 }

@@ -9,6 +9,7 @@ namespace featureExtractionMatching{
     {
         std::string img_name;
         cv::Mat img_gray;
+        cv::Mat img_col;
         int desc_rows;
         int desc_cols;
         std::vector<cv::KeyPoint> kp_img;

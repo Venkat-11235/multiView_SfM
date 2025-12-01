@@ -54,36 +54,38 @@ int main(int argc, char *argv[]) {
     auto cloud_ptr = std::make_shared<geometry::PointCloud>();
     
     cloud_ptr->points_ = points;
-    cloud_ptr->colors_ = colors;
+    //cloud_ptr->colors_ = colors;
 
-
-    cloud_ptr->EstimateNormals(
-        open3d::geometry::KDTreeSearchParamHybrid(0.1, 30));
     cloud_ptr->NormalizeNormals();
+    open3d::visualization::DrawGeometries({cloud_ptr}, "PointCloud", 1600, 900);
+
+    // cloud_ptr->EstimateNormals(
+    //     open3d::geometry::KDTreeSearchParamHybrid(0.1, 30));
+    // cloud_ptr->NormalizeNormals();
 
 
-    int depth = 8;
-    auto result = open3d::geometry::TriangleMesh::CreateFromPointCloudPoisson(*cloud_ptr, depth);
-    auto mesh = std::get<0>(result);
-    auto densities = std::get<1>(result);
+    // int depth = 8;
+    // auto result = open3d::geometry::TriangleMesh::CreateFromPointCloudPoisson(*cloud_ptr, depth);
+    // auto mesh = std::get<0>(result);
+    // auto densities = std::get<1>(result);
 
-    double min_density = std::numeric_limits<double>::max();
-    double max_density = std::numeric_limits<double>::lowest();
-    for (double d : densities) {
-        min_density = std::min(min_density, d);
-        max_density = std::max(max_density, d);
-    }
-    double thr = min_density + 0.8 * (max_density - min_density);
+    // double min_density = std::numeric_limits<double>::max();
+    // double max_density = std::numeric_limits<double>::lowest();
+    // for (double d : densities) {
+    //     min_density = std::min(min_density, d);
+    //     max_density = std::max(max_density, d);
+    // }
+    // double thr = min_density + 0.7 * (max_density - min_density);
 
-    std::vector<bool> remove_mask(mesh->vertices_.size(), false);
-    for (size_t i = 0; i < mesh->vertices_.size(); ++i) {
-        if (densities[i] < thr) {
-            remove_mask[i] = true;
-        }
-    }
-    mesh->RemoveVerticesByMask(remove_mask);
+    // std::vector<bool> remove_mask(mesh->vertices_.size(), false);
+    // for (size_t i = 0; i < mesh->vertices_.size(); ++i) {
+    //     if (densities[i] < thr) {
+    //         remove_mask[i] = true;
+    //     }
+    // }
+    // mesh->RemoveVerticesByMask(remove_mask);
 
-    open3d::visualization::DrawGeometries({mesh}, "Poisson Mesh");
+    // open3d::visualization::DrawGeometries({mesh}, "Poisson Mesh");
 
     return 0;
 

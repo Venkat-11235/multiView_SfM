@@ -47,8 +47,8 @@ endif()
 
 enable_testing()
 add_test(
-  #NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt -bp ${CMAKE_SOURCE_DIR}/build/featuresv1.bin
-  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/door/images/
+  # NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt -bp ${CMAKE_SOURCE_DIR}/build/featuresv1.bin
+  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/statue/calibration/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/statue/images/
  )
 # add_test(
 #     NAME TESTING_INTRINSICS COMMAND test_intrinsics
@@ -58,6 +58,6 @@ add_test(
 #     NAME TESTING_FEATURE_EXTRACTION COMMAND test_features
 #               ${CMAKE_SOURCE_DIR}/build/test_featuresv1.bin
 # )
-# add_test(
-#   NAME TESTING_VISUALIZATION COMMAND test_vis -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/points3D.txt
-#)
+#  add_test(
+#    NAME TESTING_VISUALIZATION COMMAND test_vis -i ${CMAKE_SOURCE_DIR}/tests/statue/calibration/points3D.txt
+# )
