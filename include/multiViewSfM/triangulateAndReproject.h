@@ -8,7 +8,7 @@ namespace triangulatePoints{
         cv::Mat projection_matrix_src;
         cv::Mat projection_matrix_dst;
         cv::Mat point_cloud_data_raw;
-        std::vector<cv::Point3d> point_cloud_data_3d;
+        std::vector<cv::Point3f> point_cloud_data_3d;
 
 
     };

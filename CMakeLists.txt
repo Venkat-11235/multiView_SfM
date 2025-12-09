@@ -48,7 +48,7 @@ endif()
 enable_testing()
 add_test(
   # NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt -bp ${CMAKE_SOURCE_DIR}/build/featuresv1.bin
-  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/statue/calibration/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/statue/images/
+  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/calibration/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/door/images/
  )
 # add_test(
 #     NAME TESTING_INTRINSICS COMMAND test_intrinsics

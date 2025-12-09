@@ -246,7 +246,7 @@ int main(int argc, char** argv){
     cv::Mat R_mat0 = cv::Mat::eye(3,3,CV_64F);
     cv::Mat t_mat0 = cv::Mat::zeros(3,1,CV_64F);
     cv::Mat R_prev, t_prev;
-    std::vector<cv::Point3d> prev_3D_points, full_pointcloud_data;
+    std::vector<cv::Point3f> prev_3D_points, full_pointcloud_data;
     std::vector<Eigen::Vector3d> points;
     points.reserve(100000);
     std::vector<cv::DMatch> prev_2D_filtered_matches;
@@ -353,16 +353,17 @@ int main(int argc, char** argv){
             
 
             // for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size(); i++)
-            // {
+            // { 
             //     auto& p = triangulated_pc_data.point_cloud_data_3d[i];
             //     points.emplace_back(p.x, p.y, p.z);
 
             // }
         }
         else{
-
+            std::cout<<"Correspondances"<<std::endl;
             get3D2DCorrespondance::correspondance filtered_correspondances = get3D2DCorrespondance::get_correspondace(img_feature_matching_result.matches_passing_homography, 
                                                                                                                             keypoint2, prev_2D_filtered_matches, prev_3D_points);
+            std::cout<<"Computed Correspondances !!!"<<std::endl;
             if (filtered_correspondances.filtered3Dpts.size()<4)
             {
                 throw std::runtime_error("PNP Computation failed due to insufficient correspondances.");
@@ -373,11 +374,14 @@ int main(int argc, char** argv){
                                                                                                                     intrinsic_parameters.K,
                                                                                                                     dist_coeffs);
 
+            std::cout<<"Transformations computed!!!"<<std::endl;                                                                                                       
+
             triangulatePoints::pointCloudData triangulated_pc_data = triangulatePoints::triangulate_points(intrinsic_parameters.K, intrinsic_parameters.K,
                                                                                                                 R_prev, t_prev, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector, 
                                                                                                                 img_feature_matching_result.src_gm_corrected,
                                                                                                                 img_feature_matching_result.dst_gm_corrected);
 
+            std::cout<<"Triangulation computed!!!"<<std::endl;
             reprojection::reprojectionErrorComp reprojection_error_computed = reprojection::compute_reprojection_error(triangulated_pc_data.point_cloud_data_raw,
                                                                                                                             img_feature_matching_result.dst_gm_corrected,
                                                                                                                                 transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
@@ -387,7 +391,7 @@ int main(int argc, char** argv){
 
 
             
-            std::vector<cv::Point2d> projected_imgpts;
+            std::vector<cv::Point2f> projected_imgpts;
             cv::projectPoints(triangulated_pc_data.point_cloud_data_3d, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
                                             intrinsic_parameters.K, dist_coeffs, projected_imgpts);
 
@@ -396,7 +400,7 @@ int main(int argc, char** argv){
             
             for (size_t i = 0; i < projected_imgpts.size(); i++)
             {
-                const cv::Point2d& proj_pt = projected_imgpts[i];
+                const cv::Point2f& proj_pt = projected_imgpts[i];
                 const cv::Point2f& obs_pt = img_feature_matching_result.dst_gm_corrected[i];
                 
                 int proj_x = static_cast<int>(proj_pt.x);
@@ -437,15 +441,8 @@ int main(int argc, char** argv){
     point_cloud_data->points_ = points;
 
     point_cloud_data->NormalizeNormals();
+    point_cloud_data->RemoveStatisticalOutliers(20,2.0);
     open3d::visualization::DrawGeometries({point_cloud_data}, "PointCloud", 1600, 900);
 
-
-
-
-    
-       
-
-
-    
     return 0;
 }
