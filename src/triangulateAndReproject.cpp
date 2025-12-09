@@ -6,12 +6,11 @@
 
 namespace triangulatePoints{
     pointCloudData triangulate_points(cv::Mat& K1, cv::Mat& K2, cv::Mat& R_0, cv::Mat& t_0, cv::Mat& R_1, cv::Mat& t_1, std::vector<cv::Point2f>& src_pts, std::vector<cv::Point2f>& dst_pts){
-    
-        R_0 = R_0.t();
-        t_0 = -R_0.t() * t_0;
+        // R_0 = R_0.t();
+        // t_0 = -R_0.t() * t_0;
 
-        R_1 = R_1.t();
-        t_1 = -R_1.t() * t_1;
+        // R_1 = R_1.t();
+        // t_1 = -R_1.t() * t_1;
         cv::Mat projection_mat_1_temp;
         cv::hconcat(R_0, t_0, projection_mat_1_temp);
 

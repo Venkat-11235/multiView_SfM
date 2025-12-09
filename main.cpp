@@ -89,7 +89,8 @@ std::vector<featureExtractionMatching::imgFeatures> saveImgFeatures(const std::s
         {
             throw std::runtime_error("File not found or unable to open the input file !!!");
         }
-        cv::resize(img_read, img_col, cv::Size(static_cast<int>(img_read.cols/SCALE_FACTOR), static_cast<int>(img_read.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
+        //cv::resize(img_read, img_col, cv::Size(static_cast<int>(img_read.cols/SCALE_FACTOR), static_cast<int>(img_read.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
+        img_col = img_read.clone();
         cv::cvtColor(img_read, img_read, cv::COLOR_BGR2GRAY);
         cv::resize(img_read, img_read, cv::Size(static_cast<int>(img_read.cols/SCALE_FACTOR), static_cast<int>(img_read.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
 
@@ -198,6 +199,46 @@ std::vector<featureExtractionMatching::imgFeatures> imgFeatureExtraction(const s
     return image_keypoint_descriptor;
 }
 
+
+auto print_cam = [](const cv::Mat& R_cw, const cv::Mat& t_cw, int idx){
+    cv::Mat C = -R_cw.t()*t_cw;
+    std::cout<<"Cam : "<<idx<< "center : "<<C.t()<<std::endl;
+};
+
+
+std::vector<cv::Vec3b> getRGBforKeypoint(const cv::Mat& image, const std::vector<cv::Point2f> keypoints, int SCALE_FACTOR){
+
+    std::vector<cv::Vec3b> rgb_values;
+    rgb_values.reserve(keypoints.size());
+
+    for(const auto& kp : keypoints){
+        int x = static_cast<int>(kp.x);
+        int y = static_cast<int>(kp.y);
+
+        x = static_cast<int>(x * SCALE_FACTOR);
+        y = static_cast<int>(y * SCALE_FACTOR);
+
+        if (x>=0 && x<image.cols && y>=0 && y<image.rows)
+        {
+            cv::Vec3b bgr = image.at<cv::Vec3b>(y,x);
+            cv::Vec3b rgb(bgr[2], bgr[1], bgr[0]);
+            rgb_values.push_back(rgb);
+
+        }
+        else{
+            std::cout<<"All zeros!!!!"<<std::endl;
+            rgb_values.emplace_back(0,0,0);
+        }
+
+        
+    }
+
+    return rgb_values;
+
+}
+
+
+
 int main(int argc, char** argv){
 
     if (argc<4)
@@ -249,7 +290,14 @@ int main(int argc, char** argv){
     std::vector<cv::Point3f> prev_3D_points, full_pointcloud_data;
     std::vector<Eigen::Vector3d> points;
     points.reserve(100000);
+
+    std::vector<Eigen::Vector3d> colours;
     std::vector<cv::DMatch> prev_2D_filtered_matches;
+    bool is_initialized = false;
+
+    double minX = 1e9, maxX = -1e9, minY=1e9, maxY=-1e9, minZ=1e9, maxZ=-1e9;
+
+    
 
     cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, CV_64F);
     
@@ -258,10 +306,8 @@ int main(int argc, char** argv){
         featureExtractionMatching::imgFeatures temp_imgFeature1 = img_features_dict[imgIdx];
         featureExtractionMatching::imgFeatures temp_imgFeature2 = img_features_dict[imgIdx+1];
 
-        #if DEBUG_MODE
-            cv::imwrite(temp_imgFeature1.img_name, temp_imgFeature1.img_gray);
-        #endif
 
+        std::cout<<"--------------------------------------------"<<std::endl;
         std::cout<<"Size of the image : "<<temp_imgFeature1.img_gray.rows<<"x"<<temp_imgFeature1.img_gray.cols<<std::endl;
         cv::Mat descriptor1 = temp_imgFeature1.desc_img;
         cv::Mat descriptor2 = temp_imgFeature2.desc_img;
@@ -327,7 +373,7 @@ int main(int argc, char** argv){
         src_pts_refiltered.clear();
         dst_pts_refiltered.clear();
 
-        if (imgIdx==0)
+        if (!is_initialized)
         {
             // cv::Mat R_mat1 = R_mat0 * rot_mat;
             // cv::Mat t_mat1 = t_mat0 + (R_mat0*trans_mat);
@@ -354,19 +400,46 @@ int main(int argc, char** argv){
             full_pointcloud_data = triangulated_pc_data.point_cloud_data_3d;
             prev_2D_filtered_matches = img_feature_matching_result.matches_passing_homography;
             
+            
 
+            std::vector<cv::Vec3b> rgb_pixels = getRGBforKeypoint(temp_imgFeature2.img_col, img_feature_matching_result.dst_gm_corrected, SCALE_FACTOR);
+
+            colours.reserve(full_pointcloud_data.size());
+            for (size_t i = 0; i < full_pointcloud_data.size(); i++)
+            {
+                const cv::Vec3b& rgb = rgb_pixels[i];
+                colours.emplace_back(rgb[0] / 255.0,
+                                        rgb[1] / 255.0,
+                                            rgb[2]/255.0);
+            }
+            
+            
+            
             // for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size(); i++)
             // { 
             //     auto& p = triangulated_pc_data.point_cloud_data_3d[i];
             //     points.emplace_back(p.x, p.y, p.z);
 
             // }
+
+            for(auto&p : full_pointcloud_data){
+                minX = std::min(minX, (double)p.x);
+                maxX = std::max(maxX, (double)p.x);
+                minY = std::min(minY, (double)p.y);
+                maxY = std::max(maxY, (double)p.y);
+                minZ = std::min(minZ, (double)p.z);
+                maxZ = std::max(maxZ, (double)p.z);
+            }
+
+            std::cout<< "Bounds: X["<<minX<<","<<maxX<<"] "
+                        <<"Y["<<minY<<","<<maxY<<"] "
+                        <<"Z["<<minZ<<","<<maxZ<<"] "<< std::endl;
+            
+            print_cam(R_mat0, t_mat0, imgIdx);
         }
         else{
-            std::cout<<"Correspondances"<<std::endl;
             get3D2DCorrespondance::correspondance filtered_correspondances = get3D2DCorrespondance::get_correspondace(img_feature_matching_result.matches_passing_homography, 
                                                                                                                             keypoint2, prev_2D_filtered_matches, prev_3D_points);
-            std::cout<<"Computed Correspondances !!!"<<std::endl;
             if (filtered_correspondances.filtered3Dpts.size()<4)
             {
                 throw std::runtime_error("PNP Computation failed due to insufficient correspondances.");
@@ -376,18 +449,18 @@ int main(int argc, char** argv){
                                                                                                                     filtered_correspondances.filtered2Dpts,
                                                                                                                     intrinsic_parameters.K,
                                                                                                                     dist_coeffs);
-
-            std::cout<<"Transformations computed!!!"<<std::endl;                                                                                                       
+                                                                                                   
 
             triangulatePoints::pointCloudData triangulated_pc_data = triangulatePoints::triangulate_points(intrinsic_parameters.K, intrinsic_parameters.K,
-                                                                                                                R_prev, t_prev, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector, 
+                                                                                                                R_prev, t_prev, transformed_parameters.rotation_matrix, 
+                                                                                                                transformed_parameters.translation_vector, 
                                                                                                                 img_feature_matching_result.src_gm_corrected,
                                                                                                                 img_feature_matching_result.dst_gm_corrected);
 
-            std::cout<<"Triangulation computed!!!"<<std::endl;
             reprojection::reprojectionErrorComp reprojection_error_computed = reprojection::compute_reprojection_error(triangulated_pc_data.point_cloud_data_raw,
                                                                                                                             img_feature_matching_result.dst_gm_corrected,
-                                                                                                                                transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
+                                                                                                                                transformed_parameters.rotation_matrix,
+                                                                                                                                 transformed_parameters.translation_vector,
                                                                                                                                  intrinsic_parameters.K, dist_coeffs);
             
             std::cout<<"Reprojection Error: "<<reprojection_error_computed.reprojection_error<<std::endl;
@@ -399,6 +472,7 @@ int main(int argc, char** argv){
                                             intrinsic_parameters.K, dist_coeffs, projected_imgpts);
 
             cv::Mat output_img_proj = temp_imgFeature2.img_col.clone();
+            cv::resize(output_img_proj, output_img_proj, cv::Size(static_cast<int>(output_img_proj.cols/SCALE_FACTOR), static_cast<int>(output_img_proj.rows/SCALE_FACTOR)),cv::INTER_CUBIC);
             std::string fname = "Projected"+ std::to_string(imgIdx)+".jpg";
             
             for (size_t i = 0; i < projected_imgpts.size(); i++)
@@ -428,10 +502,34 @@ int main(int argc, char** argv){
                        triangulated_pc_data.point_cloud_data_3d.begin(),
                        triangulated_pc_data.point_cloud_data_3d.end());
             
-            
-            
+            for(auto&p : full_pointcloud_data){
+                minX = std::min(minX, (double)p.x);
+                maxX = std::max(maxX, (double)p.x);
+                minY = std::min(minY, (double)p.y);
+                maxY = std::max(maxY, (double)p.y);
+                minZ = std::min(minZ, (double)p.z);
+                maxZ = std::max(maxZ, (double)p.z);
+            }
+
+            std::cout<< "Bounds: X["<<minX<<","<<maxX<<"] "
+                        <<"Y["<<minY<<","<<maxY<<"] "
+                        <<"Z["<<minZ<<","<<maxZ<<"] "<< std::endl;
+
+            std::vector<cv::Vec3b> rgb_pixels = getRGBforKeypoint(temp_imgFeature2.img_col, img_feature_matching_result.dst_gm_corrected, SCALE_FACTOR);
+
+            colours.reserve(full_pointcloud_data.size());
+            for (size_t i = 0; i < triangulated_pc_data.point_cloud_data_3d.size() && i<rgb_pixels.size(); i++)
+            {
+                const cv::Vec3b& rgb = rgb_pixels[i];
+                colours.emplace_back(rgb[0] / 255.0,
+                                        rgb[1] / 255.0,
+                                            rgb[2]/255.0);
+            }
+            print_cam(R_prev, t_prev, imgIdx);
         }
         
+            
+        is_initialized = true;   
     }
     for (size_t i = 0; i < full_pointcloud_data.size(); i++)
             {
@@ -442,10 +540,11 @@ int main(int argc, char** argv){
     auto point_cloud_data = std::make_shared<open3d::geometry::PointCloud>();
 
     point_cloud_data->points_ = points;
+    point_cloud_data->colors_ = colours;
 
     point_cloud_data->NormalizeNormals();
-    point_cloud_data->RemoveStatisticalOutliers(20,2.0);
-    open3d::visualization::DrawGeometries({point_cloud_data}, "PointCloud", 1600, 900);
+    //point_cloud_data->RemoveStatisticalOutliers(20,2.0);
+    open3d::visualization::DrawGeometries({point_cloud_data}, "PointCloud", 1000, 1000);
 
     return 0;
 }

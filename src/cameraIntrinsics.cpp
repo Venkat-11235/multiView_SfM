@@ -36,6 +36,9 @@ namespace readIntrinsics{
             iss >> cx;
             iss >> cy;
 
+            fintr.width = int(fintr.width/SCALE_FACTOR);
+            fintr.height = int(fintr.height/SCALE_FACTOR);
+
             fintr.K.at<double>(0,0) = static_cast<int>(fx/SCALE_FACTOR);
             fintr.K.at<double>(0,1) = 0.0;
             fintr.K.at<double>(0,2) = static_cast<int>(cx/SCALE_FACTOR);

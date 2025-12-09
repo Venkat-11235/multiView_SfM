@@ -20,7 +20,7 @@ namespace featureExtractionMatching{
 
     struct imgMatcher
     {
-        const float loewe_factor = 0.65f;
+        const float loewe_factor = 0.85f;
         std::vector<cv::DMatch> goodMatches;
         std::vector<cv::Point2f> src_pts;
         std::vector<cv::Point2f> dst_pts;

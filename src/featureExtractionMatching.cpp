@@ -74,7 +74,7 @@ namespace featureExtractionMatching{
         }
         std::cout<<"Total matches passing Loewe: "<< matched_features.src_pts.size()<<std::endl;
         std::vector<uchar> inlierMask;
-        cv::Mat H = cv::findHomography( matched_features.src_pts,matched_features.dst_pts, cv::RANSAC, 15.0, inlierMask);
+        cv::Mat H = cv::findHomography( matched_features.src_pts,matched_features.dst_pts, cv::RANSAC, 25.0, inlierMask);
         std::cout<<"Length of Inlier Mask: "<<inlierMask.size()<<std::endl;
         for (size_t inlier_idx = 0; inlier_idx < inlierMask.size(); inlier_idx++)
         {

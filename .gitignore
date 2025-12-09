@@ -44,3 +44,4 @@ build/
 tests/door
 .vscode/
 tests/statue
+tests/facade
