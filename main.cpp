@@ -329,8 +329,11 @@ int main(int argc, char** argv){
 
         if (imgIdx==0)
         {
-            cv::Mat R_mat1 = R_mat0 * rot_mat;
-            cv::Mat t_mat1 = t_mat0 + (R_mat0*trans_mat);
+            // cv::Mat R_mat1 = R_mat0 * rot_mat;
+            // cv::Mat t_mat1 = t_mat0 + (R_mat0*trans_mat);
+
+            cv::Mat R_mat1 = rot_mat.clone();
+            cv::Mat t_mat1 = trans_mat.clone();
 
             triangulatePoints::pointCloudData triangulated_pc_data = triangulatePoints::triangulate_points(intrinsic_parameters.K, intrinsic_parameters.K,
                                                                                                                 R_mat0, t_mat0, R_mat1, t_mat1, 
