@@ -39,12 +39,12 @@ namespace readIntrinsics{
             fintr.width = int(fintr.width/SCALE_FACTOR);
             fintr.height = int(fintr.height/SCALE_FACTOR);
 
-            fintr.K.at<double>(0,0) = static_cast<int>(fx/SCALE_FACTOR);
+            fintr.K.at<double>(0,0) = fx/SCALE_FACTOR;
             fintr.K.at<double>(0,1) = 0.0;
-            fintr.K.at<double>(0,2) = static_cast<int>(cx/SCALE_FACTOR);
+            fintr.K.at<double>(0,2) = cx/SCALE_FACTOR;
             fintr.K.at<double>(1, 0) = 0.0;
-            fintr.K.at<double>(1, 1) = static_cast<int>(fy/SCALE_FACTOR);
-            fintr.K.at<double>(1, 2) = static_cast<int>(cy/SCALE_FACTOR);
+            fintr.K.at<double>(1, 1) = fy/SCALE_FACTOR;
+            fintr.K.at<double>(1, 2) = cy/SCALE_FACTOR;
             fintr.K.at<double>(2, 0) = 0.0;
             fintr.K.at<double>(2, 1) = 0.0;
             fintr.K.at<double>(2, 2) = 1.0;

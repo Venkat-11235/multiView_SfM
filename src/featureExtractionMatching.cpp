@@ -34,7 +34,6 @@ namespace featureExtractionMatching{
 
         sift->detectAndCompute(img_grayscale,cv::noArray(), img_features.kp_img, img_features.desc_img);
 
-
         
         return img_features;
     }
@@ -81,7 +80,7 @@ namespace featureExtractionMatching{
             if(inlierMask[inlier_idx]){
                 matched_features.matches_passing_homography.push_back(matched_features.goodMatches[inlier_idx]);
                 matched_features.src_gm_corrected.push_back(kp1[matched_features.goodMatches[inlier_idx].queryIdx].pt);
-                matched_features.dst_gm_corrected.push_back(kp1[matched_features.goodMatches[inlier_idx].trainIdx].pt);
+                matched_features.dst_gm_corrected.push_back(kp2[matched_features.goodMatches[inlier_idx].trainIdx].pt);
             }
         }
 
