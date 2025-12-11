@@ -2,9 +2,11 @@
 #include<string>
 #include<iostream>
 
+const int  SCALE_FACTOR = 2;
 int main(int argc, char** argv){
     const std::string path = argv[1];
-    auto intr = readIntrinsics::readCameraIntrinsics(path);
+    
+    auto intr = readIntrinsics::readCameraIntrinsics(path, SCALE_FACTOR);
     std::cout<<"Width: "<<intr.width<<std::endl;  
     std::cout<<"Height: "<<intr.height<<std::endl;
     std::cout<<intr.K.cols<<std::endl;

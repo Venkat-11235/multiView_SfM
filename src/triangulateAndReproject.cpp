@@ -6,11 +6,7 @@
 
 namespace triangulatePoints{
     pointCloudData triangulate_points(cv::Mat& K1, cv::Mat& K2, cv::Mat& R_0, cv::Mat& t_0, cv::Mat& R_1, cv::Mat& t_1, std::vector<cv::Point2f>& src_pts, std::vector<cv::Point2f>& dst_pts){
-        // R_0 = R_0.t();
-        // t_0 = -R_0.t() * t_0;
 
-        // R_1 = R_1.t();
-        // t_1 = -R_1.t() * t_1;
         cv::Mat projection_mat_1_temp;
         cv::hconcat(R_0, t_0, projection_mat_1_temp);
 
@@ -20,18 +16,7 @@ namespace triangulatePoints{
         triangulatePoints::pointCloudData traingulatedPointCloud;
         traingulatedPointCloud.projection_matrix_src = K1 * projection_mat_1_temp;
         traingulatedPointCloud.projection_matrix_dst = K2 * projection_mat_2_temp;
-        // std::cout<<"Projection Matrix #1 Size: "<<traingulatedPointCloud.projection_matrix_src.rows<<" x "<<traingulatedPointCloud.projection_matrix_src.cols<<std::endl;
-        // std::cout<<"Projection Matrix #2 Size: "<<traingulatedPointCloud.projection_matrix_dst.rows<<" x "<<traingulatedPointCloud.projection_matrix_dst.cols<<std::endl;
-        #if DEBUG_MODE
-            for (size_t i = 0; i < traingulatedPointCloud.projection_matrix_src.rows; i++)
-            {
-                for (size_t j = 0; j < traingulatedPointCloud.projection_matrix_src.cols; j++)
-                {
-                    std::cout<<traingulatedPointCloud.projection_matrix_src.at<double>(i,j)<<std::endl;
-                }
-                
-            }
-        #endif;
+        
         cv::Mat pts1(2, src_pts.size(), CV_64F);
         cv::Mat pts2(2, dst_pts.size(), CV_64F);
 
@@ -84,10 +69,6 @@ namespace reprojection{
 
         std::vector<cv::Point2d> img_pts_from_3d;
 
-        // std::cout<<reprojection_error_computed.homogeneous_3d_pts.type()<<std::endl;
-
-        // std::cout<<rot_matrix.type()<<std::endl;
-        // std::cout<<trans_vector.type()<<"\n"<<K.type()<<"\n"<<dist_coeffs.type()<<std::endl;
 
         cv::projectPoints(reprojection_error_computed.homogeneous_3d_pts, rot_matrix, trans_vector, K, dist_coeffs, img_pts_from_3d);
 

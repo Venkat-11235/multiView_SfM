@@ -29,15 +29,11 @@ target_link_libraries(multiViewSfM ${OpenCV_LIBS} Open3D::Open3D)
 add_executable(multiview_sfm main.cpp)
 target_link_libraries(multiview_sfm PUBLIC multiViewSfM)
 
-add_executable(test_vis tests/test_visualization.cpp)
-target_link_libraries(test_vis PUBLIC multiViewSfM)
+# add_executable(test_vis tests/test_visualization.cpp)
+# target_link_libraries(test_vis PUBLIC multiViewSfM)
 
-# add_executable(test_intrinsics tests/test_intrinsics.cpp)
-# target_link_libraries(test_intrinsics PUBLIC multiViewSfM)
-
-
-# add_executable(test_features tests/test_featureExtractionMatching.cpp)
-# target_link_libraries(test_features PUBLIC multiViewSfM)
+add_executable(test_intrinsics tests/test_intrinsics.cpp)
+target_link_libraries(test_intrinsics PUBLIC multiViewSfM)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(multiview_sfm PRIVATE DEBUG_MODE=1)
@@ -47,17 +43,9 @@ endif()
 
 enable_testing()
 add_test(
-  # NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt -bp ${CMAKE_SOURCE_DIR}/build/featuresv1.bin
-  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/facade/calibration/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/facade/images/
+  NAME MAIN_TESTING COMMAND multiview_sfm -i ${CMAKE_SOURCE_DIR}/tests/data/calibration/cameras.txt -fp ${CMAKE_SOURCE_DIR}/tests/data/images/
  )
-# add_test(
-#     NAME TESTING_INTRINSICS COMMAND test_intrinsics
-#             ${CMAKE_SOURCE_DIR}/tests/door/parameters/cameras.txt   
-# )
-# add_test(
-#     NAME TESTING_FEATURE_EXTRACTION COMMAND test_features
-#               ${CMAKE_SOURCE_DIR}/build/test_featuresv1.bin
-# )
-#  add_test(
-#    NAME TESTING_VISUALIZATION COMMAND test_vis -i ${CMAKE_SOURCE_DIR}/tests/statue/calibration/points3D.txt
-# )
+add_test(
+    NAME TESTING_INTRINSICS COMMAND test_intrinsics
+            ${CMAKE_SOURCE_DIR}/tests/data/calibration/cameras.txt   
+)

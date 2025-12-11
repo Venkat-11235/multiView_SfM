@@ -41,7 +41,7 @@
 *.dwo
 support/
 build/
-tests/door
+tests/data
 .vscode/
 tests/statue
 tests/facade

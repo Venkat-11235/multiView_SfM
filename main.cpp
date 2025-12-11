@@ -103,7 +103,6 @@ std::vector<cv::Vec3b> getRGBforKeypoint(const cv::Mat& image, const std::vector
 
         }
         else{
-            std::cout<<"All zeros!!!!"<<std::endl;
             rgb_values.emplace_back(0,0,0);
         }
 
@@ -168,8 +167,6 @@ int main(int argc, char** argv){
     bool is_initialized = false;
 
     double minX = 1e9, maxX = -1e9, minY=1e9, maxY=-1e9, minZ=1e9, maxZ=-1e9;
-
-    
 
     cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, CV_64F);
     
@@ -331,7 +328,7 @@ int main(int argc, char** argv){
             std::cout<<"Reprojection Error: "<<reprojection_error_computed.reprojection_error<<std::endl;
 
 
-            
+            #if DEBUG_MODE
             std::vector<cv::Point2f> projected_imgpts;
             cv::projectPoints(triangulated_pc_data.point_cloud_data_3d, transformed_parameters.rotation_matrix, transformed_parameters.translation_vector,
                                             intrinsic_parameters.K, dist_coeffs, projected_imgpts);
@@ -357,6 +354,7 @@ int main(int argc, char** argv){
 
             }
             cv::imwrite(fname, output_img_proj);
+            #endif;
             
 
             R_prev = transformed_parameters.rotation_matrix;
